@@ -1,0 +1,82 @@
+---
+title: "The Multifaceted Impact of Fire Damage: Beyond the Flames"
+bibliography: reference.bib
+date: "2024-01-19"
+author: Zekai Li
+fontsize: 12pt
+link-citations: yes
+linkcolor: blue
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+abstract: This study examines the relationship between financial losses from fire incidents and the number of responding personnel in Toronto, using data from opendatatoronto and advanced visualization with ggplot2. Our analysis reveals a pronounced right-skewness in both financial losses and personnel count, with significant outliers. By applying a logarithmic transformation to both variables, we transform the nonlinear relationship into an almost linear one, indicating a proportional increase in financial loss with the number of personnel. Code and data supporting this analysis is available at this link https://github.com/ZEKAILI032/STA302/tree/main
+---
+
+```{r, include=FALSE}
+library(tidyverse)
+library(opendatatoronto)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE)
+```
+
+# Introduction
+
+Fires unleash a spectrum of complex and intricate damages, often wreaking havoc on homes and businesses in ways that are not immediately visible. Beyond the obvious destruction of personal belongings and structural components, the intense heat from fires is capable of inducing a range of distortions, including swelling and buckling. Furthermore, smoke from fire damage insidiously infiltrates furniture, upholstery, drapes, wooden structural elements, and other porous materials. If left untreated, the pungent odor of smoke can stubbornly persist for years, embedding itself into the very fabric of the affected space.
+
+In this project, `R` [@R] is used as our primary programming language. Our aim is to explore the correlation between the estimated financial impact of fire incidents and the number of responding personnel in Toronto. The dataset 'Fire Incidents', sourced from `opendatatoronto`, serves as the foundation for our analysis [@data]. We have processed the data using the dplyr package [@dplyr], and the presentation of tables is refined using the `kable` function from the knitr package [@knitr]. All resources are in github^[https://github.com/ZEKAILI032/STA302/tree/main]
+
+# Data
+
+Given the presence of numerous missing values in the dataset, which could potentially skew the findings, we implemented a simulation approach. All instances with missing data were meticulously excluded to ensure the integrity of the analysis. While acknowledging that this approach may influence the outcomes, it was deemed essential at this stage of the research to proceed with the most accurate and reliable data available.
+
+```{r}
+set.seed(12345)
+d <- search_packages("Fire Incidents") %>%
+  list_package_resources() %>%
+  slice(2) %>%
+  get_resource() 
+
+newd <- d %>% 
+  mutate(
+    personnel = Number_of_responding_personnel,
+    loss = Estimated_Dollar_Loss
+  ) %>%  
+  select(loss, 
+         personnel) %>%   
+  na.omit()
+```
+
+```{r}
+summary(newd) %>%
+  knitr::kable(caption = "Statistical Summary")
+```
+
+Table 1 presents a comprehensive statistical summary of fire-related financial losses and the number of personnel involved. The data reveals that the median fire loss is \$3,000, while the average loss significantly escalates to \$37,494. Notably, the losses extend into the upper echelons, with the third quartile at \$17,000 and an extreme maximum loss reaching a staggering \$50 million. On the personnel front, the median number stands at 21, with an average slightly higher at 25.6. The scale of personnel involvement can vary widely, as evidenced by the maximum number recorded at 1,275. The distribution of both variables exhibits a pronounced right skewness, indicating a concentration of lower values with sporadic but substantial high-value outliers.
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
+p1 <- ggplot(newd,
+       mapping = aes(x = personnel, 
+                     y = loss)) + 
+  geom_point(size = 3, alpha = 0.5) + 
+  labs(title = "Toronto Fire Incidents",
+       caption = "Figure 1")
+p1
+```
+
+Figure 1 displays a scatter plot illustrating the relationship between the number of responding personnel and the estimated dollar loss, generated using the `ggplot2` package [@wickham2011ggplot2]. The plot vividly highlights outliers in both the loss and personnel data, corroborating the observations made from the statistical summary in Table 1. The raw data suggest a nonlinear relationship between the number of personnel and the dollar loss. To address this and potentially reveal a clearer pattern, applying a logarithmic transformation to both the loss and personnel data could be beneficial, thereby normalizing the scale and stabilizing the variance of these variables.
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
+p2 <- ggplot(newd,
+       mapping = aes(x = log(personnel), 
+                     y = log(loss))) + 
+  geom_point(size = 3, alpha = 0.5) + 
+  labs(title = "Toronto Fire Incidents with Log Scale",
+       caption = "Figure 2")
+p2
+```
+
+Figure 2 depicts the relationship between personnel and loss due to fire, both plotted on a logarithmic scale. Following the log transformation, the relationship between these two variables becomes markedly linear. The graph demonstrates a consistent trend: as the log-transformed value of personnel `log(personnel)` increases, there is a corresponding increase in the log-transformed value of the estimated loss `log(loss)`. This linear relationship highlights a proportional linkage between the number of personnel involved and the financial impact of the fire.
+
+\newpage
+
+# Reference
