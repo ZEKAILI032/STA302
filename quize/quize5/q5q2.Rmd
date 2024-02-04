@@ -1,0 +1,33 @@
+---
+title: "Quize5Q2"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(mvtnorm)
+sigma <- matrix(c(1,0,0,0,0,
+                  0,1,0,0,0,
+                  0,0,1,0,0,
+                  0,0,0,1,0,
+                  0,0,0,0,1), ncol=5)
+x <- rmvnorm(n=100, mean= rep(1000, 5), sigma=sigma)
+colnames(x) <- c('Matt', 'Ash', 'Jacki', 'Rol', 'Mike')
+# Test 1: pairs plot
+pairs(x)
+```
+
+```{r}
+# Test 2: correlation
+cor(x)
+# Test 3: Anova
+x <- as.data.frame(x)
+aov(Matt ~ Ash, data = x)
+# Test 4: 
+chisq.test(x$Matt, x$Ash)
+# Test 5:
+lm(Matt ~ Ash, data = x)
+```
